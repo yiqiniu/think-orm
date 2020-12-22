@@ -410,12 +410,12 @@ trait ModelRelationQuery
      * 查询数据转换为模型数据集对象
      * @access protected
      * @param array $resultSet 数据集
-     * @return ModelCollection
+     * @return mixed
      */
-    protected function resultSetToModelCollection(array $resultSet): ModelCollection
+    protected function resultSetToModelCollection(array $resultSet)
     {
         if (empty($resultSet)) {
-            return $this->model->toCollection();
+            return $this->resultset_type !== 'array' ? $this->model->toCollection() : [];
         }
 
         // 检查动态获取器
@@ -448,7 +448,11 @@ trait ModelRelationQuery
         }
 
         // 模型数据集转换
-        return $this->model->toCollection($resultSet);
+        if($this->resultset_type!=='array'){
+            // 模型数据集转换
+            return $this->model->toCollection($resultSet);
+        }
+        return $resultSet;
     }
 
     /**
@@ -518,6 +522,10 @@ trait ModelRelationQuery
             foreach ($options['with_count'] as $val) {
                 $result->relationCount($this, (array) $val[0], $val[1], $val[2], false);
             }
+        }
+        // 结果集为数组
+        if ($this->resultset_type === 'array') {
+            $result = $result->getData();
         }
     }
 

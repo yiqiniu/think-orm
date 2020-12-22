@@ -94,9 +94,12 @@ trait ResultOperation
                 $this->filterResult($result);
             }
         }
+        if ($this->resultset_type !== 'array') {
+            // 返回Collection对象
+            $resultSet = new Collection($resultSet);
+        }
 
-        // 返回Collection对象
-        $resultSet = new Collection($resultSet);
+
     }
 
     /**

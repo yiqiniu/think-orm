@@ -22,6 +22,13 @@
 composer require topthink/think-orm
 ~~~
 
+## 修改
+在config/database.php 配置 可直接返回数组类型
+```
+// 数据集返回类型
+'resultset_type' => 'array',
+```
 ## 文档
+
 
 详细参考 [ThinkORM开发指南](https://www.kancloud.cn/manual/think-orm/content)

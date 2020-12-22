@@ -69,6 +69,12 @@ abstract class BaseQuery
     protected $options = [];
 
     /**
+     * 结果集类型
+     * @var string
+     */
+    protected $resultset_type = '';
+
+    /**
      * 架构函数
      * @access public
      * @param ConnectionInterface $connection 数据库连接对象
@@ -78,6 +84,7 @@ abstract class BaseQuery
         $this->connection = $connection;
 
         $this->prefix = $this->connection->getConfig('prefix');
+        $this->resultset_type = $this->connection->getConfig('resultset_type') ?? '';
     }
 
     /**
@@ -583,10 +590,10 @@ abstract class BaseQuery
      * @access public
      * @param int|array $listRows 每页数量 数组表示配置参数
      * @param int|bool  $simple   是否简洁模式或者总记录数
-     * @return Paginator
+     * @return mixed
      * @throws Exception
      */
-    public function paginate($listRows = null, $simple = false): Paginator
+    public function paginate($listRows = null, $simple = false)
     {
         if (is_int($simple)) {
             $total  = $simple;
@@ -598,6 +605,7 @@ abstract class BaseQuery
             'fragment'  => '', //url锚点
             'var_page'  => 'page', //分页变量
             'list_rows' => 15, //每页数量
+            'resultset_type'=>$this->resultset_type //返回类型
         ];
 
         if (is_array($listRows)) {
@@ -632,7 +640,14 @@ abstract class BaseQuery
         $this->removeOption('limit');
         $this->removeOption('page');
 
-        return Paginator::make($results, $listRows, $page, $total, $simple, $config);
+
+
+        $paginator= Paginator::make($results, $listRows, $page, $total, $simple, $config);
+        if ($this->resultset_type!=='array'){
+            return  $paginator;
+        }
+        return $paginator->toArray();
+
     }
 
     /**
@@ -651,6 +666,7 @@ abstract class BaseQuery
             'fragment'  => '', //url锚点
             'var_page'  => 'page', //分页变量
             'list_rows' => 15, //每页数量
+            'resultset_type'=>$this->resultset_type //返回类型
         ];
 
         $config   = is_array($listRows) ? array_merge($defaultConfig, $listRows) : $defaultConfig;
@@ -1075,12 +1091,12 @@ abstract class BaseQuery
      * 查找记录
      * @access public
      * @param mixed $data 数据
-     * @return Collection
+     * @return mixed
      * @throws Exception
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
      */
-    public function select($data = null): Collection
+    public function select($data = null)
     {
         if (!is_null($data)) {
             // 主键条件分析

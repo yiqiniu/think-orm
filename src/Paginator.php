@@ -79,6 +79,7 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
         'path'     => '/',
         'query'    => [],
         'fragment' => '',
+        'resultset_type'=>'',
     ];
 
     /**
@@ -107,14 +108,18 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
         $this->simple   = $simple;
         $this->listRows = $listRows;
 
-        if (!$items instanceof Collection) {
+        if ($this->options['resultset_type'] !== 'array' && !$items instanceof Collection) {
             $items = Collection::make($items);
         }
 
         if ($simple) {
             $this->currentPage = $this->setCurrentPage($currentPage);
-            $this->hasMore     = count($items) > ($this->listRows);
-            $items             = $items->slice(0, $this->listRows);
+            $this->hasMore = count($items) > ($this->listRows);
+            if ($this->options['resultset_type'] !== 'array') {
+                $items = $items->slice(0, $this->listRows);
+            } else {
+                $items = array_slice((array)$items, 0, $this->listRows, false);
+            }
         } else {
             $this->total       = $total;
             $this->lastPage    = (int) ceil($total / $listRows);
@@ -486,12 +491,16 @@ abstract class Paginator implements ArrayAccess, Countable, IteratorAggregate, J
             $total = null;
         }
 
+        if ($this->items instanceof Collection) {
+            $this->items = $this->items->toArray();
+        }
+
         return [
             'total_count'        => $total,
             'page_size'     => $this->listRows(),
             'current_page' => $this->currentPage(),
             'page_count'    => $this->lastPage,
-            'data'         => $this->items->toArray(),
+            'data'         => $this->items,
         ];
     }
 
