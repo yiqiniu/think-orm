@@ -31,7 +31,7 @@ class Pgsql extends Builder
      * INSERT ALL SQL表达式
      * @var string
      */
-    protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) %DATA% %COMMENT%';
+    protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
 
     /**
      * limit分析
@@ -115,4 +115,55 @@ class Pgsql extends Builder
         return 'RANDOM()';
     }
 
+
+    /**
+     * 生成insertall SQL
+     * @access public
+     * @param  Query $query   查询对象
+     * @param  array $dataSet 数据集
+     * @return string
+     */
+    public function insertAll(Query $query, array $dataSet): string
+    {
+        $options = $query->getOptions();
+
+        // 获取绑定信息
+        $bind = $query->getFieldsBindType();
+
+        // 获取合法的字段
+        if ('*' == $options['field']) {
+            $allowFields = array_keys($bind);
+        } else {
+            $allowFields = $options['field'];
+        }
+
+        $fields = [];
+        $values = [];
+
+        foreach ($dataSet as $k => $data) {
+            $data = $this->parseData($query, $data, $allowFields, $bind);
+
+            $values[] = '( '.implode(',', array_values($data)).')';
+
+            if (!isset($insertFields)) {
+                $insertFields = array_keys($data);
+            }
+        }
+
+        foreach ($insertFields as $field) {
+            $fields[] = $this->parseKey($query, $field);
+        }
+
+        return str_replace(
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            [
+                !empty($options['replace']) ? 'REPLACE' : 'INSERT',
+                $this->parseTable($query, $options['table']),
+                $this->parseExtra($query, $options['extra']),
+                implode(' , ', $fields),
+                implode(' , ', $values),
+                $this->parseComment($query, $options['comment']),
+            ],
+            $this->insertAllSql);
+    }
 }
