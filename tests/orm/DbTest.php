@@ -3,9 +3,11 @@ declare(strict_types=1);
 
 namespace tests\orm;
 
-use PHPUnit\Framework\TestCase;
+use tests\Base;
 use think\Collection;
+use think\db\exception\DbException;
 use think\db\Raw;
+use think\Exception as ThinkException;
 use think\facade\Db;
 use function array_column;
 use function array_keys;
@@ -14,7 +16,7 @@ use function array_values;
 use function tests\array_column_ex;
 use function tests\array_value_sort;
 
-class DbTest extends TestCase
+class DbTest extends Base
 {
     protected static $testUserData;
 
@@ -62,7 +64,7 @@ SQL
         $this->assertEquals(array_column($users, 'username'), $result);
 
         // 获取某字段唯一
-        $result = Db::table('test_user')->distinct(true)->column('type');
+        $result = Db::table('test_user')->column('DISTINCT type');
         $expected = array_unique(array_column($users, 'type'));
         $this->assertEquals($expected, $result);
 
@@ -144,11 +146,32 @@ SQL
         $result = Db::table('test_user')->whereIn('type', [])->column('*');
         $this->assertEquals([], $result);
 
+        $expected = Collection::make(self::$testUserData)->whereNotIn('type', [1, 3])->values()->toArray();
+        $result = Db::table('test_user')->whereNotIn('type', [1, 3])->column('*');
+        $this->assertEquals($expected, $result);
+
+        $expected = Collection::make(self::$testUserData)->values()->toArray();
+        $result = Db::table('test_user')->whereNotIn('type', [])->column('*');
+        $this->assertEquals($expected, $result);
+
         $this->assertEquals([
             "SELECT * FROM `test_user` WHERE  `type` IN (1,3)",
             "SELECT * FROM `test_user` WHERE  `type` = 1",
             "SELECT * FROM `test_user` WHERE  `type` IN (1,0)",
             "SELECT * FROM `test_user` WHERE  0 = 1",
+            "SELECT * FROM `test_user` WHERE  `type` NOT IN (1,3)",
+            "SELECT * FROM `test_user` WHERE  1 = 1",
         ], $sqlLogs);
+    }
+
+    public function testException()
+    {
+        $this->expectException(DbException::class);
+        try {
+            Db::query("wrong syntax");
+        } catch (DbException $exception) {
+            $this->assertInstanceOf(ThinkException::class, $exception);
+            throw $exception;
+        }
     }
 }
