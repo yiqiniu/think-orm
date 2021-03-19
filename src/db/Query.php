@@ -435,7 +435,11 @@ class Query extends BaseQuery
                 $times++;
                 $query = $this->options($options)->page($times, $count);
             } else {
-                $end    = $resultSet->pop();
+                if ($this->resultset_type !== 'array') {
+                    $end    = $resultSet->pop();
+                }else{
+                    $end = array_pop($resultSet);
+                }
                 $lastId = is_array($end) ? $end[$key] : $end->getData($key);
 
                 $query = $this->options($options)
