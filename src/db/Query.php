@@ -405,6 +405,9 @@ class Query extends BaseQuery
         $options = $this->getOptions();
         $column  = $column ?: $this->getPk();
 
+        if(!empty($options['alias'][$this->prefix.$this->name])){
+            $column = $options['alias'][$this->prefix.$this->name].'.'.$column;
+        }
         if (isset($options['order'])) {
             unset($options['order']);
         }
