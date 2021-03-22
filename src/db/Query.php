@@ -405,9 +405,7 @@ class Query extends BaseQuery
         $options = $this->getOptions();
         $column  = $column ?: $this->getPk();
 
-        if(!empty($options['alias'][$this->prefix.$this->name])){
-            $column = $options['alias'][$this->prefix.$this->name].'.'.$column;
-        }
+
         if (isset($options['order'])) {
             unset($options['order']);
         }
@@ -418,7 +416,12 @@ class Query extends BaseQuery
             $times = 1;
             $query = $this->options($options)->page($times, $count);
         } else {
+
+            if(!empty($options['alias'][$this->prefix.$this->name])){
+                $column = $options['alias'][$this->prefix.$this->name].'.'.$column;
+            }
             $query = $this->options($options)->limit($count);
+
 
             if (strpos($column, '.')) {
                 [$alias, $key] = explode('.', $column);
