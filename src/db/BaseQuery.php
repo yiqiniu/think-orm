@@ -641,7 +641,6 @@ abstract class BaseQuery
         $this->removeOption('page');
 
 
-
         $paginator = Paginator::make($results, $listRows, $page, $total, $simple, $config);
         if ($this->resultset_type !== 'array') {
             return $paginator;
@@ -920,7 +919,9 @@ abstract class BaseQuery
     public function setOption($option, $value)
     {
         if (is_array($option)) {
-            $this->options = $option;
+            foreach ($option as $key => $val) {
+                $this->options[$key] = $val;
+            }
         } else {
             $this->options[$option] = $value;
         }
