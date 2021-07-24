@@ -152,7 +152,7 @@ trait ResultOperation
     /**
      * 处理空数据
      * @access protected
-     * @return array|Model|null
+     * @return array|Model|null|static
      * @throws DbException
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
@@ -170,7 +170,7 @@ trait ResultOperation
      * 查找单条记录 不存在返回空数据（或者空模型）
      * @access public
      * @param mixed $data 数据
-     * @return array|Model
+     * @return array|Model|static
      */
     public function findOrEmpty($data = null)
     {
@@ -229,7 +229,9 @@ trait ResultOperation
      * 查找多条记录 如果不存在则抛出异常
      * @access public
      * @param array|string|Query|Closure $data 数据
-     * @return array|Model
+     * @return array|Collection|static[]
+     * @throws ModelNotFoundException
+     * @throws DataNotFoundException
      */
     public function selectOrFail($data = null)
     {
@@ -240,7 +242,9 @@ trait ResultOperation
      * 查找单条记录 如果不存在则抛出异常
      * @access public
      * @param array|string|Query|Closure $data 数据
-     * @return array|Model
+     * @return array|Model|static
+     * @throws ModelNotFoundException
+     * @throws DataNotFoundException
      */
     public function findOrFail($data = null)
     {
