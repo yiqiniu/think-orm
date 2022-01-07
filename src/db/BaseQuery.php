@@ -601,10 +601,10 @@ abstract class BaseQuery
      * @access public
      * @param int|array $listRows 每页数量 数组表示配置参数
      * @param int|bool  $simple   是否简洁模式或者总记录数
-     * @return Paginator
+     * @return mixed
      * @throws Exception
      */
-    public function paginate($listRows = null, $simple = false): Paginator
+    public function paginate($listRows = null, $simple = false)
     {
         if (is_int($simple)) {
             $total  = $simple;
@@ -674,10 +674,10 @@ abstract class BaseQuery
      * @param int|array $listRows 每页数量或者分页配置
      * @param string    $key      分页索引键
      * @param string    $sort     索引键排序 asc|desc
-     * @return Paginator
+     * @return mixed
      * @throws Exception
      */
-    public function paginateX($listRows = null, string $key = null, string $sort = null): Paginator
+    public function paginateX($listRows = null, string $key = null, string $sort = null)
     {
         $defaultConfig = [
             'query'     => [], //url额外参数
