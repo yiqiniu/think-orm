@@ -462,9 +462,9 @@ trait ModelRelationQuery
      * 查询数据转换为模型数据集对象
      * @access protected
      * @param array $resultSet 数据集
-     * @return ModelCollection
+     * @return mixed
      */
-    protected function resultSetToModelCollection(array $resultSet): ModelCollection
+    protected function resultSetToModelCollection(array $resultSet)
     {
         if (empty($resultSet)) {
             return $this->model->toCollection();
@@ -491,7 +491,11 @@ trait ModelRelationQuery
         }
 
         // 模型数据集转换
-        return $this->model->toCollection($resultSet);
+        if($this->resultset_type!=='array'){
+            // 模型数据集转换
+            return $this->model->toCollection($resultSet);
+        }
+        return $resultSet;
     }
 
     /**
