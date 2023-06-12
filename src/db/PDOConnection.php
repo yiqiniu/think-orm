@@ -83,6 +83,8 @@ abstract class PDOConnection extends Connection
         'break_match_str' => [],
         // 自动参数绑定
         'auto_param_bind' => true,
+        // 数据集返回类型
+        'resultset_type' => 'array',
     ];
 
     /**
@@ -1834,7 +1836,7 @@ abstract class PDOConnection extends Connection
      */
     public function transactionXa(callable $callback, array $dbs = [])
     {
-        $xid = uniqid('xa');
+        $xid = uniqid('xa', true);
 
         if (empty($dbs)) {
             $dbs[] = $this;

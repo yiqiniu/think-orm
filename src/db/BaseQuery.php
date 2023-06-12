@@ -8,7 +8,7 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace think\db;
 
@@ -69,6 +69,12 @@ abstract class BaseQuery
     protected $options = [];
 
     /**
+     * 返回数组
+     * @var bool
+     */
+    protected $resultset_is_array=false;
+
+    /**
      * 架构函数
      * @access public
      * @param ConnectionInterface $connection 数据库连接对象
@@ -78,13 +84,15 @@ abstract class BaseQuery
         $this->connection = $connection;
 
         $this->prefix = $this->connection->getConfig('prefix');
+        // 判断是否返回数组
+        $this->resultset_is_array = (strtolower($this->connection->getConfig('resultset_type')) === 'array');
     }
 
     /**
      * 利用__call方法实现一些特殊的Model方法
      * @access public
      * @param string $method 方法名称
-     * @param array  $args   调用参数
+     * @param array $args 调用参数
      * @return mixed
      * @throws Exception
      */
@@ -594,10 +602,10 @@ abstract class BaseQuery
      * @access public
      * @param int|array $listRows 每页数量 数组表示配置参数
      * @param int|bool  $simple   是否简洁模式或者总记录数
-     * @return Paginator
+     * @return Paginator|array
      * @throws Exception
      */
-    public function paginate($listRows = null, $simple = false): Paginator
+    public function paginate($listRows = null, $simple = false)
     {
         if (is_int($simple)) {
             $total  = $simple;
@@ -609,6 +617,7 @@ abstract class BaseQuery
             'fragment'  => '', //url锚点
             'var_page'  => 'page', //分页变量
             'list_rows' => 15, //每页数量
+            'result_array'=>$this->resultset_is_array // 返回数组
         ];
 
         if (is_array($listRows)) {
@@ -651,7 +660,13 @@ abstract class BaseQuery
         $this->removeOption('limit');
         $this->removeOption('page');
 
-        return Paginator::make($results, $listRows, $page, $total, $simple, $config);
+
+        $paginator = Paginator::make($results, $listRows, $page, $total, $simple, $config);
+        if (!$this->resultset_is_array) {
+            return $paginator;
+        }
+        return $paginator->toArray();
+
     }
 
     /**
@@ -660,16 +675,17 @@ abstract class BaseQuery
      * @param int|array $listRows 每页数量或者分页配置
      * @param string    $key      分页索引键
      * @param string    $sort     索引键排序 asc|desc
-     * @return Paginator
+     * @return Paginator|array
      * @throws Exception
      */
-    public function paginateX($listRows = null, string $key = null, string $sort = null): Paginator
+    public function paginateX($listRows = null, string $key = null, string $sort = null)
     {
         $defaultConfig = [
             'query'     => [], //url额外参数
             'fragment'  => '', //url锚点
             'var_page'  => 'page', //分页变量
             'list_rows' => 15, //每页数量
+            'result_array' =>$this->resultset_is_array, //返回数组
         ];
 
         $config   = is_array($listRows) ? array_merge($defaultConfig, $listRows) : $defaultConfig;
@@ -721,7 +737,11 @@ abstract class BaseQuery
 
         $this->options($options);
 
-        return Paginator::make($results, $listRows, $page, null, true, $config);
+        $paginator = Paginator::make($results, $listRows, $page, null, true, $config);
+        if (!$this->resultset_is_array) {
+            return $paginator;
+        }
+        return $paginator->toArray();
     }
 
     /**
@@ -946,13 +966,19 @@ abstract class BaseQuery
     /**
      * 设置当前的查询参数
      * @access public
-     * @param string $option 参数名
+     * @param string|array $option 参数名
      * @param mixed  $value  参数值
      * @return $this
      */
-    public function setOption(string $option, $value)
+    public function setOption($option, $value)
     {
-        $this->options[$option] = $value;
+        if (is_array($option)) {
+            foreach ($option as $key => $val) {
+                $this->options[$key] = $val;
+            }
+        } else {
+            $this->options[$option] = $value;
+        }
         return $this;
     }
 
@@ -1142,11 +1168,11 @@ abstract class BaseQuery
      * @access public
      * @param mixed $data 数据
      * @return Collection|array|static[]
-     * @throws Exception
+     * @throws Exception|array
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
      */
-    public function select($data = null): Collection
+    public function select($data = null)
     {
         if (!is_null($data)) {
             // 主键条件分析
@@ -1165,7 +1191,7 @@ abstract class BaseQuery
             // 生成模型对象
             $resultSet = $this->resultSetToModelCollection($resultSet);
         } else {
-            $this->resultSet($resultSet);
+            $this->resultSet($resultSet, !$this->resultset_is_array);
         }
 
         return $resultSet;
@@ -1254,10 +1280,10 @@ abstract class BaseQuery
         if (isset($options['page'])) {
             // 根据页数计算limit
             [$page, $listRows] = $options['page'];
-            $page              = $page > 0 ? $page : 1;
-            $listRows          = $listRows ?: (is_numeric($options['limit']) ? $options['limit'] : 20);
-            $offset            = $listRows * ($page - 1);
-            $options['limit']  = $offset . ',' . $listRows;
+            $page = $page > 0 ? $page : 1;
+            $listRows = $listRows ?: (is_numeric($options['limit']) ? $options['limit'] : 20);
+            $offset = $listRows * ($page - 1);
+            $options['limit'] = $offset . ',' . $listRows;
         }
 
         $this->options = $options;
@@ -1274,7 +1300,7 @@ abstract class BaseQuery
      */
     public function parseUpdateData(&$data): bool
     {
-        $pk       = $this->getPk();
+        $pk = $this->getPk();
         $isUpdate = false;
         // 如果存在主键数据 则自动作为更新条件
         if (is_string($pk) && isset($data[$pk])) {

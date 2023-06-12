@@ -8,11 +8,12 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace think\db\concern;
 
 use Closure;
+use think\contract\Arrayable;
 use think\helper\Str;
 use think\Model;
 use think\model\Collection as ModelCollection;
@@ -54,7 +55,7 @@ trait ModelRelationQuery
     /**
      * 设置需要隐藏的输出属性
      * @access public
-     * @param  array $hidden   属性列表
+     * @param array $hidden 属性列表
      * @return $this
      */
     public function hidden(array $hidden = [])
@@ -67,7 +68,7 @@ trait ModelRelationQuery
     /**
      * 设置需要输出的属性
      * @access public
-     * @param  array $visible
+     * @param array $visible
      * @return $this
      */
     public function visible(array $visible = [])
@@ -80,7 +81,7 @@ trait ModelRelationQuery
     /**
      * 设置需要附加的输出属性
      * @access public
-     * @param  array $append   属性列表
+     * @param array $append 属性列表
      * @return $this
      */
     public function append(array $append = [])
@@ -94,7 +95,7 @@ trait ModelRelationQuery
      * 添加查询范围
      * @access public
      * @param array|string|Closure $scope 查询范围定义
-     * @param array                $args  参数
+     * @param array $args 参数
      * @return $this
      */
     public function scope($scope, ...$args)
@@ -144,9 +145,9 @@ trait ModelRelationQuery
     /**
      * 使用搜索器条件搜索字段
      * @access public
-     * @param string|array  $fields 搜索字段
-     * @param mixed         $data   搜索数据
-     * @param string        $prefix 字段前缀标识
+     * @param string|array $fields 搜索字段
+     * @param mixed $data 搜索数据
+     * @param string $prefix 字段前缀标识
      * @return $this
      */
     public function withSearch($fields, $data = [], string $prefix = '')
@@ -163,7 +164,7 @@ trait ModelRelationQuery
             } elseif ($this->model) {
                 // 检测搜索器
                 $fieldName = is_numeric($key) ? $field : $key;
-                $method    = 'search' . Str::studly($fieldName) . 'Attr';
+                $method = 'search' . Str::studly($fieldName) . 'Attr';
 
                 if (method_exists($this->model, $method)) {
                     $this->model->$method($this, $data[$field] ?? null, $data, $prefix);
@@ -179,8 +180,8 @@ trait ModelRelationQuery
     /**
      * 设置数据字段获取器
      * @access public
-     * @param string|array  $name     字段名
-     * @param callable      $callback 闭包获取器
+     * @param string|array $name 字段名
+     * @param callable $callback 闭包获取器
      * @return $this
      */
     public function withAttr($name, callable $callback = null)
@@ -220,15 +221,15 @@ trait ModelRelationQuery
             return $this;
         }
 
-        $this->options['with'] = (array) $with;
+        $this->options['with'] = (array)$with;
         return $this;
     }
 
     /**
      * 关联预载入 JOIN方式
      * @access protected
-     * @param array|string $with     关联方法名
-     * @param string       $joinType JOIN方式
+     * @param array|string $with 关联方法名
+     * @param string $joinType JOIN方式
      * @return $this
      */
     public function withJoin($with, string $joinType = '')
@@ -237,19 +238,19 @@ trait ModelRelationQuery
             return $this;
         }
 
-        $with  = (array) $with;
+        $with = (array)$with;
         $first = true;
 
         foreach ($with as $key => $relation) {
             $closure = null;
-            $field   = true;
+            $field = true;
 
             if ($relation instanceof Closure) {
                 // 支持闭包查询过滤关联条件
-                $closure  = $relation;
+                $closure = $relation;
                 $relation = $key;
             } elseif (is_array($relation)) {
-                $field    = $relation;
+                $field = $relation;
                 $relation = $key;
             } elseif (is_string($relation) && strpos($relation, '.')) {
                 $relation = strstr($relation, '.', true);
@@ -274,9 +275,9 @@ trait ModelRelationQuery
      * 关联统计
      * @access protected
      * @param array|string $relations 关联方法名
-     * @param string       $aggregate 聚合查询方法
-     * @param string       $field     字段
-     * @param bool         $subQuery  是否使用子查询
+     * @param string $aggregate 聚合查询方法
+     * @param string $field 字段
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     protected function withAggregate($relations, string $aggregate = 'count', $field = '*', bool $subQuery = true)
@@ -286,7 +287,7 @@ trait ModelRelationQuery
         }
 
         if (!$subQuery) {
-            $this->options['with_aggregate'][] = [(array) $relations, $aggregate, $field];
+            $this->options['with_aggregate'][] = [(array)$relations, $aggregate, $field];
             return $this;
         }
 
@@ -294,7 +295,7 @@ trait ModelRelationQuery
             $this->field('*');
         }
 
-        $this->model->relationCount($this, (array) $relations, $aggregate, $field, true);
+        $this->model->relationCount($this, (array)$relations, $aggregate, $field, true);
         return $this;
     }
 
@@ -302,9 +303,9 @@ trait ModelRelationQuery
      * 关联缓存
      * @access public
      * @param string|array|bool $relation 关联方法名
-     * @param mixed             $key    缓存key
+     * @param mixed $key 缓存key
      * @param integer|\DateTime $expire 缓存有效期
-     * @param string            $tag    缓存标签
+     * @param string $tag 缓存标签
      * @return $this
      */
     public function withCache($relation = true, $key = true, $expire = null, string $tag = null)
@@ -319,7 +320,7 @@ trait ModelRelationQuery
 
         if ($key instanceof \DateTimeInterface || $key instanceof \DateInterval || (is_int($key) && is_null($expire))) {
             $expire = $key;
-            $key    = true;
+            $key = true;
         }
 
         if (true === $relation || is_numeric($relation)) {
@@ -327,7 +328,7 @@ trait ModelRelationQuery
             return $this;
         }
 
-        $relations = (array) $relation;
+        $relations = (array)$relation;
         foreach ($relations as $name => $relation) {
             if (!is_numeric($name)) {
                 $this->options['with_cache'][$name] = is_array($relation) ? $relation : [$key, $relation, $tag];
@@ -343,7 +344,7 @@ trait ModelRelationQuery
      * 关联统计
      * @access public
      * @param string|array $relation 关联方法名
-     * @param bool         $subQuery 是否使用子查询
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     public function withCount($relation, bool $subQuery = true)
@@ -355,8 +356,8 @@ trait ModelRelationQuery
      * 关联统计Sum
      * @access public
      * @param string|array $relation 关联方法名
-     * @param string       $field    字段
-     * @param bool         $subQuery 是否使用子查询
+     * @param string $field 字段
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     public function withSum($relation, string $field, bool $subQuery = true)
@@ -368,8 +369,8 @@ trait ModelRelationQuery
      * 关联统计Max
      * @access public
      * @param string|array $relation 关联方法名
-     * @param string       $field    字段
-     * @param bool         $subQuery 是否使用子查询
+     * @param string $field 字段
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     public function withMax($relation, string $field, bool $subQuery = true)
@@ -381,8 +382,8 @@ trait ModelRelationQuery
      * 关联统计Min
      * @access public
      * @param string|array $relation 关联方法名
-     * @param string       $field    字段
-     * @param bool         $subQuery 是否使用子查询
+     * @param string $field 字段
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     public function withMin($relation, string $field, bool $subQuery = true)
@@ -394,8 +395,8 @@ trait ModelRelationQuery
      * 关联统计Avg
      * @access public
      * @param string|array $relation 关联方法名
-     * @param string       $field    字段
-     * @param bool         $subQuery 是否使用子查询
+     * @param string $field 字段
+     * @param bool $subQuery 是否使用子查询
      * @return $this
      */
     public function withAvg($relation, string $field, bool $subQuery = true)
@@ -406,11 +407,11 @@ trait ModelRelationQuery
     /**
      * 根据关联条件查询当前模型
      * @access public
-     * @param  string  $relation 关联方法名
-     * @param  mixed   $operator 比较操作符
-     * @param  integer $count    个数
-     * @param  string  $id       关联表的统计字段
-     * @param  string  $joinType JOIN类型
+     * @param string $relation 关联方法名
+     * @param mixed $operator 比较操作符
+     * @param integer $count 个数
+     * @param string $id 关联表的统计字段
+     * @param string $joinType JOIN类型
      * @return $this
      */
     public function has(string $relation, string $operator = '>=', int $count = 1, string $id = '*', string $joinType = '')
@@ -421,10 +422,10 @@ trait ModelRelationQuery
     /**
      * 根据关联条件查询当前模型
      * @access public
-     * @param  string $relation 关联方法名
-     * @param  mixed  $where    查询条件（数组或者闭包）
-     * @param  mixed  $fields   字段
-     * @param  string $joinType JOIN类型
+     * @param string $relation 关联方法名
+     * @param mixed $where 查询条件（数组或者闭包）
+     * @param mixed $fields 字段
+     * @param string $joinType JOIN类型
      * @return $this
      */
     public function hasWhere(string $relation, $where = [], string $fields = '*', string $joinType = '')
@@ -435,7 +436,7 @@ trait ModelRelationQuery
     /**
      * JSON字段数据转换
      * @access protected
-     * @param array $result  查询数据
+     * @param array $result 查询数据
      * @return void
      */
     protected function jsonModelResult(array &$result): void
@@ -454,7 +455,7 @@ trait ModelRelationQuery
                 }
             }
 
-            $result[$name] = !$this->options['json_assoc'] ? (object) $jsonData : $jsonData;
+            $result[$name] = !$this->options['json_assoc'] ? (object)$jsonData : $jsonData;
         }
     }
 
@@ -462,9 +463,9 @@ trait ModelRelationQuery
      * 查询数据转换为模型数据集对象
      * @access protected
      * @param array $resultSet 数据集
-     * @return ModelCollection
+     * @return ModelCollection|array
      */
-    protected function resultSetToModelCollection(array $resultSet): ModelCollection
+    protected function resultSetToModelCollection(array $resultSet)
     {
         if (empty($resultSet)) {
             return $this->model->toCollection();
@@ -491,13 +492,20 @@ trait ModelRelationQuery
         }
 
         // 模型数据集转换
+        if ($this->resultset_is_array) {
+            // 模型数据集转换
+            return array_map(function ($value) {
+                return $value instanceof Arrayable ? $value->toArray() : $value;
+            }, $resultSet);
+        }
         return $this->model->toCollection($resultSet);
+
     }
 
     /**
      * 查询数据转换为模型对象
      * @access protected
-     * @param array $result           查询数据
+     * @param array $result 查询数据
      * @return void
      */
     protected function resultToModel(array &$result): void
@@ -556,7 +564,12 @@ trait ModelRelationQuery
         }
 
         // 刷新原始数据
-        $result->refreshOrigin();
+
+        if ($this->resultset_is_array) {
+            $result = $result->toArray();
+        } else {
+            $result->refreshOrigin();
+        }
     }
 
 }

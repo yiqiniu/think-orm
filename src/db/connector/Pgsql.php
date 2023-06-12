@@ -101,6 +101,48 @@ class Pgsql extends PDOConnection
         return $info;
     }
 
+    /**
+     * 插入记录
+     * @access public
+     * @param BaseQuery $query 查询对象
+     * @param boolean $getLastInsID 返回自增主键
+     * @return mixed
+     */
+    public function insert(BaseQuery $query, bool $getLastInsID = false)
+    {
+        // 分析查询表达式
+        $options = $query->parseOptions();
+
+        // 生成SQL语句
+        $sql = $this->builder->insert($query);
+
+        // 执行操作
+        $result = '' == $sql ? 0 : $this->pdoExecute($query, $sql, $query->getBind());
+
+        if ($result) {
+            $pk = $query->getAutoInc();
+            $lastInsId = '';
+            if ($pk) {
+                $sequence = $options['sequence'] ?? null;
+                $lastInsId = $this->getLastInsID($query, $sequence);
+            }
+            $data = $options['data'];
+            if ($lastInsId && $pk) {
+                $data[$pk] = $lastInsId;
+            }
+
+            $query->setOption('data', $data);
+
+            $this->db->trigger('after_insert', $query);
+
+            if ($getLastInsID && $lastInsId) {
+                return $lastInsId;
+            }
+        }
+
+        return $result;
+    }
+
     protected function supportSavepoint(): bool
     {
         return true;

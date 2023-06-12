@@ -16,6 +16,7 @@ use function array_values;
 use function tests\array_column_ex;
 use function tests\array_value_sort;
 
+
 class DbTest extends Base
 {
     protected static $testUserData;
@@ -44,9 +45,43 @@ SQL
             ['id' => 2, 'type' => 2, 'username' => 'rtyrty', 'nickname' => 'fghfgh', 'password' => '456456'],
             ['id' => 3, 'type' => 1, 'username' => 'uiouio', 'nickname' => 'jkljkl', 'password' => '789789'],
             ['id' => 5, 'type' => 2, 'username' => 'qazqaz', 'nickname' => 'wsxwsx', 'password' => '098098'],
-            ['id' => 7, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb', 'password' => '765765'],
+            ['id' => 7, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb1', 'password' => '765765'],
+            ['id' => 8, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb2', 'password' => '765765'],
+            ['id' => 9, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb3', 'password' => '765765'],
+            ['id' => 10, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb4', 'password' => '765765'],
+            ['id' => 11, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb5', 'password' => '765765'],
+            ['id' => 12, 'type' => 2, 'username' => 'rfvrfv', 'nickname' => 'tgbtgb6', 'password' => '765765'],
         ];
         Db::table('test_user')->insertAll(self::$testUserData);
+    }
+
+
+
+    public function testSelect()
+    {
+      /*  self::setUpBeforeClass();
+        $this->setUp();;*/
+
+        // 获取全部列
+     /*   $result = Db::table('test_user')->select();
+        $this->assertIsArray($result, 'select不是数组');
+        $this->assertCount(5, $result);
+
+
+        $result = Db::table('test_user')->where('id', 1)->find();
+        $this->assertIsArray($result, 'find不是数组');*/
+
+
+        // 测试page
+        $result=Db::table('test_user')->paginate(['list_rows'=>1],true);
+        $this->assertIsArray($result, 'paginate不是数组');
+        $this->assertEquals($result['has_more'],1,'has_more');
+
+
+        /*$result=Db::table('test_user')->order('id desc')->paginateX(['list_rows'=>1]);
+        $this->assertIsArray($result, 'paginate不是数组');
+        $this->assertCount(5, $result['data']);
+        $this->assertEquals($result['has_more'],1,'has_more2');*/
     }
 
     public function testColumn()

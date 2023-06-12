@@ -21,6 +21,8 @@ Db::setConfig([
             'username' => getenv('TESTS_DB_MYSQL_USERNAME'),
             // 密码
             'password' => getenv('TESTS_DB_MYSQL_PASSWORD'),
+            // 端口
+            'hostport' => getenv('TESTS_DB_MYSQL_PORT'),
             // 数据库编码默认采用utf8
             'charset'  => 'utf8',
             // 数据库表前缀
@@ -31,6 +33,7 @@ Db::setConfig([
             'break_match_str' => [],
             // 数据库调试模式
             'debug'    => false,
+            'resultset_type'    => getenv('TESTS_DB_MYQL_RESULTSET_TYPE'),
         ],
         'mysql_manage' => [
             // 数据库类型
