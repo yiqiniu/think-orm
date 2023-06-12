@@ -23,10 +23,10 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="TESTS_DB_MYSQL_HOSTNAME" value="47.104.185.10"/>
-        <env name="TESTS_DB_MYSQL_DATABASE" value="yiqiniu_2021"/>
-        <env name="TESTS_DB_MYSQL_USERNAME" value="yiqiniu_2021"/>
-        <env name="TESTS_DB_MYSQL_PASSWORD" value="fdHeyBieztbieEYH"/>
+        <env name="TESTS_DB_MYSQL_HOSTNAME" value="127.0.0.1"/>
+        <env name="TESTS_DB_MYSQL_DATABASE" value="testing"/>
+        <env name="TESTS_DB_MYSQL_USERNAME" value="root"/>
+        <env name="TESTS_DB_MYSQL_PASSWORD" value="password"/>
         <env name="TESTS_DB_MYSQL_PORT" value="3306"/>
         <env name="TESTS_DB_MYQL_RESULTSET_TYPE" value="array"/>
     </php>
