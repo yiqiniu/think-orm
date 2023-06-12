@@ -105,7 +105,7 @@ trait ResultOperation
         }
 
         // 返回Collection对象
-        if ($toCollection || $this->resultset_type!=='array') {
+        if ($toCollection) {
             $resultSet = new Collection($resultSet);
         }
     }

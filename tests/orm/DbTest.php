@@ -63,13 +63,14 @@ SQL
         $this->setUp();;*/
 
         // 获取全部列
-     /*   $result = Db::table('test_user')->select();
+        $result = Db::table('test_user')->select();
         $this->assertIsArray($result, 'select不是数组');
-        $this->assertCount(5, $result);
+        $this->assertIsArray(current($result), 'select不是数组');
+        $this->assertCount(10, $result);
 
 
         $result = Db::table('test_user')->where('id', 1)->find();
-        $this->assertIsArray($result, 'find不是数组');*/
+        $this->assertIsArray($result, 'find不是数组');
 
 
         // 测试page
@@ -78,10 +79,10 @@ SQL
         $this->assertEquals($result['has_more'],1,'has_more');
 
 
-        /*$result=Db::table('test_user')->order('id desc')->paginateX(['list_rows'=>1]);
+        $result=Db::table('test_user')->order('id desc')->paginateX(['list_rows'=>1]);
         $this->assertIsArray($result, 'paginate不是数组');
-        $this->assertCount(5, $result['data']);
-        $this->assertEquals($result['has_more'],1,'has_more2');*/
+        $this->assertCount(1, $result['data']);
+        $this->assertEquals($result['has_more'],0,'has_more2');
     }
 
     public function testColumn()
@@ -91,7 +92,9 @@ SQL
         // 获取全部列
         $result = Db::table('test_user')->column('*', 'id');
 
-        $this->assertCount(5, $result);
+        $this->assertCount(10, $result);
+        $this->assertIsArray( $result,'testcolumn');
+        $this->assertIsArray(current($result) ,'testcolumn');
         $this->assertEquals($users, array_values($result));
         $this->assertEquals(array_column($users, 'id'), array_keys($result));
 
