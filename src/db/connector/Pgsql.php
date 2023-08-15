@@ -12,6 +12,7 @@
 namespace think\db\connector;
 
 use PDO;
+use think\db\BaseQuery;
 use think\db\PDOConnection;
 
 /**
