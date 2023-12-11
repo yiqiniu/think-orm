@@ -347,7 +347,7 @@ abstract class Model implements JsonSerializable, ArrayAccess, Arrayable, Jsonab
      * @param string|bool $key 缓存标识
      * @return $this
      */
-    public function setCacheKey(string | bool $key)
+    public function setCacheKey(string $key)
     {
         $this->cacheKey = $key;
         return $this;
