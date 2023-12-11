@@ -25,7 +25,7 @@ class Pgsql extends Builder
      * INSERT SQL表达式
      * @var string
      */
-    protected $insertSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+    protected $insertSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT% %CONFLICT%';
 
     /**
      * INSERT ALL SQL表达式
@@ -115,6 +115,39 @@ class Pgsql extends Builder
         return 'RANDOM()';
     }
 
+    /**
+     * 生成Insert SQL
+     * @access public
+     * @param  Query $query 查询对象
+     * @return string
+     */
+    public function insert(Query $query): string
+    {
+        $options = $query->getOptions();
+
+        // 分析并处理数据
+        $data = $this->parseData($query, $options['data']);
+        if (empty($data)) {
+            return '';
+        }
+
+        $fields = array_keys($data);
+        $values = array_values($data);
+
+        return str_replace(
+            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%', '%CONFLICT%'],
+            [
+                'INSERT',
+                $this->parseTable($query, $options['table']),
+                $this->parseExtra($query, $options['extra']),
+                implode(' , ', $fields),
+                implode(' , ', $values),
+                $this->parseComment($query, $options['comment']),
+                $this->parseComment($query, $options['conflict']??''),
+            ],
+            $this->insertSql
+        );
+    }
 
     /**
      * 生成insertall SQL
