@@ -40,7 +40,7 @@ class Pgsql extends PDOConnection
      */
     protected function parseDsn(array $config): string
     {
-        $dsn = 'pgsql:dbname=' . $config['database'] . ';host=' . $config['hostname'];
+        $dsn = 'pgsql:dbname=' . $config['database'] . ';host=' . $config['hostname'].';gssencmode=disable';
 
         if (!empty($config['hostport'])) {
             $dsn .= ';port=' . $config['hostport'];
