@@ -414,6 +414,10 @@ class Query extends BaseQuery
             $times = 1;
             $query = $this->options($options)->page($times, $count);
         } else {
+
+            if(!empty($options['alias'][$this->prefix.$this->name])){
+                $column = $options['alias'][$this->prefix.$this->name].'.'.$column;
+            }
             $query = $this->options($options)->limit($count);
 
             if (strpos($column, '.')) {
@@ -434,7 +438,11 @@ class Query extends BaseQuery
                 $times++;
                 $query = $this->options($options)->page($times, $count);
             } else {
-                $end    = $resultSet->pop();
+                if (!$this->resultset_is_array) {
+                     $end    = $resultSet->pop();
+                }else{
+                    $end = array_pop($resultSet);
+                }
                 $lastId = is_array($end) ? $end[$key] : $end->getData($key);
 
                 $query = $this->options($options)
