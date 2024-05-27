@@ -159,7 +159,7 @@ trait ResultOperation
      */
     protected function resultToEmpty()
     {
-        if ($this->resultset_type !== 'array') {
+        if ($this->resultset_type === 'array') {
             return [];
         }
         if (!empty($this->options['fail'])) {
