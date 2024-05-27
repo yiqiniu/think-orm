@@ -159,6 +159,9 @@ trait ResultOperation
      */
     protected function resultToEmpty()
     {
+        if ($this->resultset_type !== 'array') {
+            return [];
+        }
         if (!empty($this->options['fail'])) {
             $this->throwNotFound();
         } elseif (!empty($this->options['allow_empty'])) {
