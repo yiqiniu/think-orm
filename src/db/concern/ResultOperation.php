@@ -143,8 +143,11 @@ trait ResultOperation
      * @throws ModelNotFoundException
      * @throws DataNotFoundException
      */
-    protected function resultToEmpty()
+    protected function resultToEmpty( bool $toCollection = true)
     {
+        if ($toCollection===false){
+            return [];
+        }
         if (!empty($this->options['fail'])) {
             $this->throwNotFound();
         } elseif (!empty($this->options['allow_empty'])) {
