@@ -53,6 +53,8 @@ abstract class PDOConnection extends Connection
         'dsn'             => '',
         // 数据库连接参数
         'params'          => [],
+        // 添加dsn扩展配置
+        'dsn_extend'     => '',
         // 数据库编码默认采用utf8
         'charset'         => 'utf8',
         // 数据库表前缀

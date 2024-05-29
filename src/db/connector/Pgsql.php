@@ -41,11 +41,11 @@ class Pgsql extends PDOConnection
     protected function parseDsn(array $config): string
     {
         $dsn = 'pgsql:dbname=' . $config['database'] . ';host=' . $config['hostname'];
-        if (PHP_OS === 'Darwin' && php_uname('m') === 'arm64') {
-            $dsn .= ';gssencmode=disable';
-        }
         if (!empty($config['hostport'])) {
             $dsn .= ';port=' . $config['hostport'];
+        }
+        if (!empty($this->config['dsn_extend'])) {
+            $dsn .= ';' . $this->config['dsn_extend'];
         }
 
         return $dsn;
