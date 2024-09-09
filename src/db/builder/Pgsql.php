@@ -8,11 +8,12 @@
 // +----------------------------------------------------------------------
 // | Author: liu21st <liu21st@gmail.com>
 // +----------------------------------------------------------------------
-declare (strict_types = 1);
+declare (strict_types=1);
 
 namespace think\db\builder;
 
 use think\db\Builder;
+use think\db\ConflictBuilderInterface;
 use think\db\Query;
 use think\db\Raw;
 
@@ -25,19 +26,19 @@ class Pgsql extends Builder
      * INSERT SQL表达式
      * @var string
      */
-    protected $insertSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %COMMENT%';
+    protected $insertSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES (%DATA%) %CONFLICT%';
 
     /**
      * INSERT ALL SQL表达式
      * @var string
      */
-    protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES %DATA% %COMMENT%';
+    protected $insertAllSql = 'INSERT INTO %TABLE% (%FIELD%) VALUES %DATA% %CONFLICT%';
 
     /**
      * limit分析
      * @access protected
-     * @param  Query     $query        查询对象
-     * @param  mixed     $limit
+     * @param Query $query 查询对象
+     * @param mixed $limit
      * @return string
      */
     public function parseLimit(Query $query, string $limit): string
@@ -57,18 +58,34 @@ class Pgsql extends Builder
     }
 
     /**
+     * 获取解决插入冲突时,解决冲突的方法
+     * @param array $options 数据表的设置项
+     * @param string $tableName 当前表名
+     * @return string 返回解决冲突的扩展语句
+     */
+    protected function getConflict(array $options, string $tableName): string
+    {
+        $conflict = '';
+        if (!empty($options['conflict']) && $options['conflict'] instanceof ConflictBuilderInterface) {
+            $conflict = $options['conflict']->Builder($tableName);
+        }
+        return $conflict;
+    }
+
+    /**
      * 字段和表名处理
      * @access public
-     * @param  Query     $query     查询对象
-     * @param  mixed     $key       字段名
-     * @param  bool      $strict   严格检测
+     * @param Query $query 查询对象
+     * @param mixed $key 字段名
+     * @param bool $strict 严格检测
      * @return string
      */
     public function parseKey(Query $query, $key, bool $strict = false): string
     {
         if (is_int($key)) {
-            return (string) $key;
-        } elseif ($key instanceof Raw) {
+            return (string)$key;
+        }
+        if ($key instanceof Raw) {
             return $this->parseRaw($query, $key);
         }
 
@@ -107,7 +124,7 @@ class Pgsql extends Builder
     /**
      * 随机排序
      * @access protected
-     * @param  Query     $query        查询对象
+     * @param Query $query 查询对象
      * @return string
      */
     protected function parseRand(Query $query): string
@@ -115,12 +132,46 @@ class Pgsql extends Builder
         return 'RANDOM()';
     }
 
+    /**
+     * 生成Insert SQL
+     * @access public
+     * @param Query $query 查询对象
+     * @return string
+     */
+    public function insert(Query $query): string
+    {
+        $options = $query->getOptions();
+
+        // 分析并处理数据
+        $data = $this->parseData($query, $options['data']);
+        if (empty($data)) {
+            return '';
+        }
+
+        $fields = array_keys($data);
+        $values = array_values($data);
+
+        $tableName = $this->parseTable($query, $options['table']);
+        $conflict = $this->getConflict($options, $tableName);
+
+        return str_replace(
+            ['%TABLE%', '%FIELD%', '%DATA%', '%CONFLICT%'],
+            [
+                $tableName,
+                implode(' , ', $fields),
+                implode(' , ', $values),
+                $conflict,
+            ],
+            $this->insertSql
+        );
+    }
+
 
     /**
      * 生成insertall SQL
      * @access public
-     * @param  Query $query   查询对象
-     * @param  array $dataSet 数据集
+     * @param Query $query 查询对象
+     * @param array $dataSet 数据集
      * @return string
      */
     public function insertAll(Query $query, array $dataSet): string
@@ -143,7 +194,7 @@ class Pgsql extends Builder
         foreach ($dataSet as $k => $data) {
             $data = $this->parseData($query, $data, $allowFields, $bind);
 
-            $values[] = '( '.implode(',', array_values($data)).')';
+            $values[] = '( ' . implode(',', array_values($data)) . ')';
 
             if (!isset($insertFields)) {
                 $insertFields = array_keys($data);
@@ -154,16 +205,18 @@ class Pgsql extends Builder
             $fields[] = $this->parseKey($query, $field);
         }
 
+        $tableName = $this->parseTable($query, $options['table']);
+        $conflict = $this->getConflict($options, $tableName);
+
         return str_replace(
-            ['%INSERT%', '%TABLE%', '%EXTRA%', '%FIELD%', '%DATA%', '%COMMENT%'],
+            ['%TABLE%', '%FIELD%', '%DATA%', '%CONFLICT%'],
             [
-                !empty($options['replace']) ? 'REPLACE' : 'INSERT',
-                $this->parseTable($query, $options['table']),
-                $this->parseExtra($query, $options['extra']),
+                $tableName,
                 implode(' , ', $fields),
                 implode(' , ', $values),
-                $this->parseComment($query, $options['comment']),
+                $conflict,
             ],
             $this->insertAllSql);
     }
+
 }
