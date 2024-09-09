@@ -469,7 +469,16 @@ abstract class BaseQuery
 
         return $this;
     }
-
+    /**
+     * 用于pgsql的冲突处理
+     * @param ConflictBuilderInterface $Builder
+     * @return $this
+     */
+    public function conflict(ConflictBuilderInterface $Builder)
+    {
+        $this->options['conflict'] = $Builder;
+        return $this;
+    }
     /**
      * 指定分页
      * @access public
